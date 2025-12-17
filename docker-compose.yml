@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: library_db
+    environment:
+      POSTGRES_USER: ${DB_USER:-library_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-library_password}
+      POSTGRES_DB: ${DB_NAME:-library_db}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-library_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: src/LibrarySystem.Web/Dockerfile
+    container_name: library_web
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=db;Port=5432;Database=${DB_NAME:-library_db};Username=${DB_USER:-library_user};Password=${DB_PASSWORD:-library_password}
+      Jwt__SecretKey: ${JWT_SECRET_KEY:-YourSecretKeyThatIsAtLeast32CharactersLong12345678901234567890}
+      Jwt__Issuer: ${JWT_ISSUER:-LibrarySystem}
+      Jwt__Audience: ${JWT_AUDIENCE:-LibrarySystemUsers}
+      Jwt__ExpirationInMinutes: ${JWT_EXPIRATION:-60}
+    ports:
+      - "${WEB_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+
