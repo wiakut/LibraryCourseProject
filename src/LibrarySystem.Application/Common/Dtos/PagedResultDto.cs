@@ -1,5 +1,4 @@
-namespace LibrarySystem.Application.Common.Dtos;
-
+﻿namespace LibrarySystem.Application.Common.Dtos;
 public class PagedResultDto<T>
 {
     public List<T> Items { get; set; } = new();
@@ -10,4 +9,3 @@ public class PagedResultDto<T>
     public bool HasNextPage => PageNumber < TotalPages;
     public bool HasPreviousPage => PageNumber > 1;
 }
-
