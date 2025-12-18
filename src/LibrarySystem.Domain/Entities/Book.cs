@@ -1,5 +1,4 @@
-namespace LibrarySystem.Domain.Entities;
-
+﻿namespace LibrarySystem.Domain.Entities;
 public class Book
 {
     public Guid Id { get; set; }
@@ -11,9 +10,6 @@ public class Book
     public int TotalCount { get; set; }
     public int AvailableCount { get; set; }
     public int InRentCount { get; set; }
-
     public ICollection<RentalTransaction> RentalTransactions { get; set; } = new List<RentalTransaction>();
     public ICollection<RentalRequest> RentalRequests { get; set; } = new List<RentalRequest>();
 }
-
-

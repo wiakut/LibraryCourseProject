@@ -1,5 +1,4 @@
-namespace LibrarySystem.Domain.Entities;
-
+﻿namespace LibrarySystem.Domain.Entities;
 public class Fine
 {
     public Guid Id { get; set; }
@@ -7,9 +6,5 @@ public class Fine
     public decimal Amount { get; set; }
     public string Reason { get; set; } = string.Empty;
     public DateTime CreatedDate { get; set; }
-
-    // Navigation property
     public RentalTransaction RentalTransaction { get; set; } = null!;
 }
-
-

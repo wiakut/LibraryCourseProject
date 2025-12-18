@@ -1,7 +1,5 @@
-using LibrarySystem.Domain.Enums;
-
+﻿using LibrarySystem.Domain.Enums;
 namespace LibrarySystem.Domain.Entities;
-
 public class RentalRequest
 {
     public Guid Id { get; set; }
@@ -13,8 +11,6 @@ public class RentalRequest
     public string? DenialReason { get; set; }
     public DateTime? ProcessedDate { get; set; }
     public string? ProcessedByUserId { get; set; }
-
     public Book Book { get; set; } = null!;
     public Reader Reader { get; set; } = null!;
 }
-

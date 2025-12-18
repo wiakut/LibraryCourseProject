@@ -1,5 +1,4 @@
-namespace LibrarySystem.Domain.Entities;
-
+﻿namespace LibrarySystem.Domain.Entities;
 public class Reader
 {
     public Guid Id { get; set; }
@@ -8,10 +7,6 @@ public class Reader
     public string Phone { get; set; } = string.Empty;
     public Guid ReaderCategoryId { get; set; }
     public string? UserId { get; set; } // Optional link to Identity User
-
-    // Navigation properties
     public ReaderCategory ReaderCategory { get; set; } = null!;
     public ICollection<RentalTransaction> RentalTransactions { get; set; } = new List<RentalTransaction>();
 }
-
-
