@@ -1,0 +1,68 @@
+﻿@model IEnumerable<LibrarySystem.Application.Features.Rentals.Dtos.RentalTransactionDto>
+@{
+    ViewData["Title"] = "My Rentals";
+}
+<div class="page-header">
+    <h1 class="page-title">My Rentals</h1>
+</div>
+<div class="card-elevated p-3 mb-3">
+    <form method="get" class="mb-0">
+    <div class="row g-2">
+        <div class="col-auto">
+            <select name="status" class="form-select">
+                <option value="">All</option>
+                @if (ViewBag.StatusFilter as string == "Active")
+                {
+                    <option value="Active" selected="selected">Active</option>
+                }
+                else
+                {
+                    <option value="Active">Active</option>
+                }
+                @if (ViewBag.StatusFilter as string == "Returned")
+                {
+                    <option value="Returned" selected="selected">Returned</option>
+                }
+                else
+                {
+                    <option value="Returned">Returned</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-outline-primary">Filter</button>
+        </div>
+    </div>
+    </form>
+</div>
+<table class="table table-modern">
+    <thead>
+        <tr>
+            <th>Issue Date</th>
+            <th>Expected Return</th>
+            <th>Status</th>
+            <th>Final Cost</th>
+            <th>Fine</th>
+            <th>Refund</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var rental in Model)
+{
+        var isOverdue = rental.Status == LibrarySystem.Domain.Enums.RentalStatus.Active
+                        && rental.ExpectedReturnDate.Date < DateTime.UtcNow.Date;
+        <tr class="@(isOverdue ? "table-warning" : "")">
+            <td>@rental.IssueDate.ToShortDateString()</td>
+            <td>@rental.ExpectedReturnDate.ToShortDateString()</td>
+            <td>@rental.Status</td>
+            <td>@rental.FinalRentalCost.ToString("C")</td>
+            <td>@rental.FineAmount.ToString("C")</td>
+            <td>@rental.RefundAmount.ToString("C")</td>
+            <td class="text-end">
+                <a asp-action="Details" asp-route-id="@rental.Id" class="btn btn-sm btn-secondary">Details</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

@@ -1,0 +1,147 @@
+﻿@model IEnumerable<LibrarySystem.Application.Features.Reports.Dtos.BookInventoryReportDto>
+@using System.Linq
+@{
+    ViewData["Title"] = "Book Inventory Report";
+    var total = Model.Count();
+    var available = Model.Count(x => x.IsAvailable);
+    var rented = total - available;
+}
+<div class="mb-4">
+    <div class="report-header">
+        <div>
+            <h1 class="report-header-title mb-1">Book inventory</h1>
+            <p class="report-header-meta mb-0">
+                Snapshot of all titles in your catalog with their availability and genre.
+            </p>
+        </div>
+        <div class="report-toolbar">
+            <div class="report-summary-pill">
+                <span>рџ“љ @total titles</span>
+            </div>
+        </div>
+    </div>
+    <div class="row g-3 mb-3">
+        <div class="col-lg-4">
+            <div class="report-chart-card h-100">
+                <div class="report-chart-card__title">Availability</div>
+                <p class="mb-2">
+                    <span class="report-summary-pill">
+                        вњ… How much of your catalog is currently on the shelf.
+                    </span>
+                </p>
+                <canvas id="inventoryAvailabilityChart" style="max-height: 260px;"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-8 d-flex align-items-stretch">
+            <div class="card card-elevated w-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="section-title mb-0">Titles</h5>
+                        <div class="w-auto">
+                            <input type="text" id="bookInventorySearch" class="form-control form-control-sm" placeholder="Search by title, author, or genre..." style="min-width: 250px;" />
+                        </div>
+                    </div>
+                    <table class="table table-modern mb-0" id="bookInventoryTable">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>Genre</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Title</td>
+                                <td>@item.Author</td>
+                                <td>@item.Genre</td>
+                                <td>@(item.IsAvailable ? "Available" : "Rented")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                    <div id="bookInventoryNoResults" class="text-center p-3 text-muted" style="display: none;">
+                        No books found matching your search.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        (function () {
+            if (!window.Chart) return;
+            const canvas = document.getElementById('inventoryAvailabilityChart');
+            if (!canvas) return;
+            const available = parseInt("@available", 10) || 0;
+            const rented = parseInt("@rented", 10) || 0;
+            new Chart(canvas, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Available', 'Rented'],
+                    datasets: [{
+                        data: [available, rented],
+                        backgroundColor: ['#22c55e', '#3b82f6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 12
+                            }
+                        }
+                    },
+                    cutout: '65%',
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            const searchInput = document.getElementById('bookInventorySearch');
+            const table = document.getElementById('bookInventoryTable');
+            const noResults = document.getElementById('bookInventoryNoResults');
+            if (searchInput && table && noResults) {
+                const tbody = table.querySelector('tbody');
+                if (!tbody) return;
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        const searchTerm = this.value.toLowerCase().trim();
+                        if (searchTerm === '') {
+                            rows.forEach(row => row.style.display = '');
+                            noResults.style.display = 'none';
+                            return;
+                        }
+                        let visibleCount = 0;
+                        rows.forEach(row => {
+                            const cells = row.querySelectorAll('td');
+                            if (cells.length < 4) return;
+                            const title = cells[0].textContent.toLowerCase();
+                            const author = cells[1].textContent.toLowerCase();
+                            const genre = cells[2].textContent.toLowerCase();
+                            if (title.includes(searchTerm) || author.includes(searchTerm) || genre.includes(searchTerm)) {
+                                row.style.display = '';
+                                visibleCount++;
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        });
+                        if (visibleCount === 0) {
+                            noResults.style.display = 'block';
+                        } else {
+                            noResults.style.display = 'none';
+                        }
+                    }, 300);
+                });
+            }
+        })();
+    </script>
+}

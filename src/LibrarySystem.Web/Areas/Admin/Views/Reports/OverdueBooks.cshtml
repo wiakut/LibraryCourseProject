@@ -1,0 +1,162 @@
+﻿@model IEnumerable<LibrarySystem.Application.Features.Reports.Dtos.OverdueBooksReportDto>
+@using System.Globalization
+@using System.Linq
+@{
+    ViewData["Title"] = "Overdue Books Report";
+    var totalItems = Model.Count();
+    var totalEstimatedFine = Model.Sum(x => x.EstimatedFine);
+    var bucket0to7 = Model.Count(x => x.OverdueDays <= 7);
+    var bucket8to14 = Model.Count(x => x.OverdueDays is > 7 and <= 14);
+    var bucket15plus = Model.Count(x => x.OverdueDays > 14);
+}
+<div class="mb-4">
+    <div class="report-header">
+        <div>
+            <h1 class="report-header-title mb-1">Overdue books</h1>
+            <p class="report-header-meta mb-0">
+                See which readers are late, by how many days, and the fines you can expect.
+            </p>
+        </div>
+        <div class="report-toolbar">
+            <div class="report-summary-pill">
+                <span>📚 @totalItems overdue items</span>
+            </div>
+        </div>
+    </div>
+    <div class="row g-3 mb-3">
+        <div class="col-lg-5">
+            <div class="report-chart-card h-100">
+                <div class="report-chart-card__title">Overdue by days</div>
+                <p class="mb-2">
+                    <span class="report-summary-pill">
+                        📊 Distribution of overdue items by delay length.
+                    </span>
+                </p>
+                <canvas id="overdueBucketsChart" style="max-height: 260px;"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-7 d-flex align-items-stretch">
+            <div class="card card-elevated w-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="section-title mb-0">Details</h5>
+                        <div class="w-auto">
+                            <input type="text" id="overdueBooksSearch" class="form-control form-control-sm" placeholder="Search by book, reader, or phone..." style="min-width: 250px;" />
+                        </div>
+                    </div>
+                    <table class="table table-modern table-striped mb-0" id="overdueBooksTable">
+                        <thead>
+                            <tr>
+                                <th>Book</th>
+                                <th>Reader</th>
+                                <th>Phone</th>
+                                <th>Issue date</th>
+                                <th>Expected return</th>
+                                <th>Overdue (days)</th>
+                                <th>Estimated fine</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.BookTitle</td>
+                                <td>@item.ReaderName</td>
+                                <td>@item.ReaderPhone</td>
+                                <td>@item.IssueDate.ToShortDateString()</td>
+                                <td>@item.ExpectedReturnDate.ToShortDateString()</td>
+                                <td>@item.OverdueDays</td>
+                                <td>@item.EstimatedFine.ToString("C")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                    <div id="overdueBooksNoResults" class="text-center p-3 text-muted" style="display: none;">
+                        No overdue books found matching your search.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        (function () {
+            if (!window.Chart) return;
+            const canvas = document.getElementById('overdueBucketsChart');
+            if (!canvas) return;
+            const buckets = [
+                parseInt("@bucket0to7", 10) || 0,
+                parseInt("@bucket8to14", 10) || 0,
+                parseInt("@bucket15plus", 10) || 0
+            ];
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: ['0–7 days', '8–14 days', '15+ days'],
+                    datasets: [{
+                        label: 'Overdue items',
+                        data: buckets,
+                        backgroundColor: ['#22c55e', '#f97316', '#ef4444']
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+            const searchInput = document.getElementById('overdueBooksSearch');
+            const table = document.getElementById('overdueBooksTable');
+            const noResults = document.getElementById('overdueBooksNoResults');
+            if (searchInput && table && noResults) {
+                const tbody = table.querySelector('tbody');
+                if (!tbody) return;
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        const searchTerm = this.value.toLowerCase().trim();
+                        if (searchTerm === '') {
+                            rows.forEach(row => row.style.display = '');
+                            noResults.style.display = 'none';
+                            return;
+                        }
+                        let visibleCount = 0;
+                        rows.forEach(row => {
+                            const cells = row.querySelectorAll('td');
+                            if (cells.length < 3) return;
+                            const bookTitle = cells[0].textContent.toLowerCase();
+                            const readerName = cells[1].textContent.toLowerCase();
+                            const readerPhone = cells[2].textContent.toLowerCase();
+                            if (bookTitle.includes(searchTerm) || readerName.includes(searchTerm) || readerPhone.includes(searchTerm)) {
+                                row.style.display = '';
+                                visibleCount++;
+                            } else {
+                                row.style.display = 'none';
+                            }
+                        });
+                        if (visibleCount === 0) {
+                            noResults.style.display = 'block';
+                        } else {
+                            noResults.style.display = 'none';
+                        }
+                    }, 300);
+                });
+            }
+        })();
+    </script>
+}

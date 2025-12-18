@@ -1,0 +1,45 @@
+﻿@model LibrarySystem.Application.Features.Rentals.Commands.CreateRental.CreateRentalCommand
+@{
+    ViewData["Title"] = "Create Rental";
+    var books = ViewBag.Books as IEnumerable<LibrarySystem.Domain.Entities.Book>;
+    var readers = ViewBag.Readers as IEnumerable<LibrarySystem.Domain.Entities.Reader>;
+}
+<div class="page-header">
+    <h1 class="page-title">Create Rental</h1>
+</div>
+<div class="form-card">
+    <form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="BookId" class="form-label">Book</label>
+        <input type="text" id="bookSearch" class="form-control" placeholder="Search for a book..." autocomplete="off" />
+        <input type="hidden" asp-for="BookId" id="bookIdHidden" />
+        <span asp-validation-for="BookId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="ReaderId" class="form-label">Reader</label>
+        <input type="text" id="readerSearch" class="form-control" placeholder="Search for a reader..." autocomplete="off" />
+        <input type="hidden" asp-for="ReaderId" id="readerIdHidden" />
+        <span asp-validation-for="ReaderId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="ExpectedReturnDate" class="form-label"></label>
+        <input asp-for="ExpectedReturnDate" class="form-control" type="date" />
+        <span asp-validation-for="ExpectedReturnDate" class="text-danger"></span>
+    </div>
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a asp-action="Index" class="btn btn-outline-primary">Cancel</a>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/autocomplete.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initAutocomplete('bookSearch', 'bookIdHidden', '@Url.Action("SearchBooks", "Books", new { area = "Admin" })');
+            initAutocomplete('readerSearch', 'readerIdHidden', '@Url.Action("SearchReaders", "Readers", new { area = "Admin" })');
+        });
+    </script>
+}

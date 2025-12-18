@@ -1,0 +1,62 @@
+﻿@model LibrarySystem.Application.Features.RentalRequests.Dtos.RentalRequestDto
+@using LibrarySystem.Domain.Enums
+@{
+    ViewData["Title"] = "Rental Request Details";
+}
+<div class="page-header">
+    <h1 class="page-title">Rental Request Details</h1>
+</div>
+<div class="form-card">
+    <dl class="row">
+        <dt class="col-sm-3">Book</dt>
+        <dd class="col-sm-9">
+            <a asp-area="Admin" asp-controller="Books" asp-action="Details" asp-route-id="@Model.BookId">@Model.BookTitle</a>
+        </dd>
+        <dt class="col-sm-3">Reader</dt>
+        <dd class="col-sm-9">
+            <a asp-area="Admin" asp-controller="Readers" asp-action="Details" asp-route-id="@Model.ReaderId">@Model.ReaderName</a>
+        </dd>
+        <dt class="col-sm-3">Request Date</dt>
+        <dd class="col-sm-9">@Model.RequestDate.ToString("yyyy-MM-dd HH:mm")</dd>
+        <dt class="col-sm-3">Status</dt>
+        <dd class="col-sm-9">
+            @if (Model.Status == RentalRequestStatus.Pending)
+            {
+                <span class="badge bg-warning">Pending</span>
+            }
+            else if (Model.Status == RentalRequestStatus.Approved)
+            {
+                <span class="badge bg-success">Approved</span>
+            }
+            else if (Model.Status == RentalRequestStatus.Denied)
+            {
+                <span class="badge bg-danger">Denied</span>
+            }
+        </dd>
+        @if (Model.ExpectedReturnDate.HasValue)
+        {
+            <dt class="col-sm-3">Expected Return Date</dt>
+            <dd class="col-sm-9">@Model.ExpectedReturnDate.Value.ToString("yyyy-MM-dd")</dd>
+        }
+        @if (Model.ProcessedDate.HasValue)
+        {
+            <dt class="col-sm-3">Processed Date</dt>
+            <dd class="col-sm-9">@Model.ProcessedDate.Value.ToString("yyyy-MM-dd HH:mm")</dd>
+        }
+        @if (!string.IsNullOrEmpty(Model.DenialReason))
+        {
+            <dt class="col-sm-3">Denial Reason</dt>
+            <dd class="col-sm-9">
+                <div class="alert alert-danger mb-0">@Model.DenialReason</div>
+            </dd>
+        }
+    </dl>
+    <div class="d-flex gap-2 mt-4">
+        @if (Model.Status == RentalRequestStatus.Pending)
+        {
+            <a asp-action="Approve" asp-route-id="@Model.Id" class="btn btn-success" style="background-color: #198754; border-color: #198754; color: white;">Approve</a>
+            <a asp-action="Deny" asp-route-id="@Model.Id" class="btn btn-danger">Deny</a>
+        }
+        <a asp-action="Index" class="btn btn-outline-primary">Back to List</a>
+    </div>
+</div>

@@ -1,0 +1,49 @@
+﻿@model LibrarySystem.Application.Features.Readers.Commands.UpdateReader.UpdateReaderCommand
+@{
+    ViewData["Title"] = "Edit Reader";
+    var categories = ViewBag.ReaderCategories as IEnumerable<LibrarySystem.Domain.Entities.ReaderCategory>;
+}
+<div class="page-header">
+    <h1 class="page-title">Edit Reader</h1>
+</div>
+<div class="form-card">
+    <form asp-action="Edit" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="Id" />
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Address" class="form-label"></label>
+        <input asp-for="Address" class="form-control" />
+        <span asp-validation-for="Address" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Phone" class="form-label"></label>
+        <input asp-for="Phone" class="form-control" />
+        <span asp-validation-for="Phone" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="ReaderCategoryId" class="form-label">Reader Category</label>
+        <input type="text" id="categorySearch" class="form-control" placeholder="Search for a category..." autocomplete="off" value="@(categories?.FirstOrDefault(c => c.Id == Model.ReaderCategoryId)?.Name ?? "")" />
+        <input type="hidden" asp-for="ReaderCategoryId" id="categoryIdHidden" />
+        <span asp-validation-for="ReaderCategoryId" class="text-danger"></span>
+    </div>
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a asp-action="Index" class="btn btn-outline-primary">Cancel</a>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/autocomplete.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const categoryName = '@(categories?.FirstOrDefault(c => c.Id == Model.ReaderCategoryId)?.Name ?? "")';
+            initAutocomplete('categorySearch', 'categoryIdHidden', '@Url.Action("SearchReaderCategories", "Readers", new { area = "Admin" })', categoryName);
+        });
+    </script>
+}

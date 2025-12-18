@@ -1,0 +1,140 @@
+﻿@model LibrarySystem.Application.Features.Reports.Dtos.FinancialReportDto
+@using System.Globalization
+@{
+    ViewData["Title"] = "Financial Report";
+}
+<div class="mb-4">
+    <div class="report-header">
+        <div>
+            <h1 class="report-header-title mb-1">Financial report</h1>
+            <p class="report-header-meta mb-0">
+                Overview of rental income, fines collected, pledge funds and overall net income.
+            </p>
+        </div>
+        <div class="report-toolbar">
+            <form method="get" class="d-flex flex-wrap gap-2 align-items-end">
+                <div>
+                    <label for="from" class="form-label mb-1">From</label>
+                    <input id="from" name="from" type="date" class="form-control form-control-sm"
+                           value="@(ViewBag.From is DateTime from ? from.ToString("yyyy-MM-dd") : string.Empty)" />
+                </div>
+                <div>
+                    <label for="to" class="form-label mb-1">To</label>
+                    <input id="to" name="to" type="date" class="form-control form-control-sm"
+                           value="@(ViewBag.To is DateTime to ? to.ToString("yyyy-MM-dd") : string.Empty)" />
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-outline-primary btn-sm px-3">Apply</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row g-3 mb-3">
+        <div class="col-md-3 col-sm-6">
+            <div class="card card-metric">
+                <div class="card-body">
+                    <h5 class="card-title">RENTAL INCOME</h5>
+                    <p class="card-text">@Model.TotalRentalIncome.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card card-metric card-metric--accent">
+                <div class="card-body">
+                    <h5 class="card-title">FINES COLLECTED</h5>
+                    <p class="card-text">@Model.TotalFinesCollected.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card card-metric">
+                <div class="card-body">
+                    <h5 class="card-title">PLEDGE FUNDS</h5>
+                    <p class="card-text">@Model.TotalPledgeFunds.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card card-metric card-metric--danger">
+                <div class="card-body">
+                    <h5 class="card-title">NET INCOME</h5>
+                    <p class="card-text">@Model.NetIncome.ToString("C")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="report-chart-card h-100">
+                <div class="report-chart-card__title">Income breakdown</div>
+                <p class="mb-2">
+                    <span class="report-summary-pill">
+                        📊 Distribution of sources for the current period.
+                    </span>
+                </p>
+                <canvas id="financialSummaryChart" style="max-height: 260px;"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-6 d-flex align-items-stretch">
+            <div class="card card-elevated w-100">
+                <div class="card-body">
+                    <h5 class="section-title">Summary</h5>
+                    <p class="mb-2">
+                        <span class="muted">Period:</span>
+                        @if (ViewBag.From is DateTime fromDate && ViewBag.To is DateTime toDate)
+                        {
+                            <span>@fromDate.ToShortDateString() – @toDate.ToShortDateString()</span>
+                        }
+                        else
+                        {
+                            <span>All time</span>
+                        }
+                    </p>
+                    <ul class="mb-0">
+                        <li><strong>Rental income</strong> and <strong>fines</strong> together drive your cash flow.</li>
+                        <li><strong>Pledge funds</strong> are held and may not be realized as income.</li>
+                        <li><strong>Net income</strong> shows the final balance for the selected period.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        (function () {
+            if (!window.Chart) return;
+            const canvas = document.getElementById('financialSummaryChart');
+            if (!canvas) return;
+            const rental = parseFloat("@Model.TotalRentalIncome.ToString(CultureInfo.InvariantCulture)");
+            const fines = parseFloat("@Model.TotalFinesCollected.ToString(CultureInfo.InvariantCulture)");
+            const pledges = parseFloat("@Model.TotalPledgeFunds.ToString(CultureInfo.InvariantCulture)");
+            const data = {
+                labels: ['Rental income', 'Fines', 'Pledge funds'],
+                datasets: [{
+                    data: [rental, fines, pledges],
+                    backgroundColor: ['#3b82f6', '#f97316', '#22c55e'],
+                    borderWidth: 0
+                }]
+            };
+            new Chart(canvas, {
+                type: 'doughnut',
+                data: data,
+                options: {
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 12
+                            }
+                        }
+                    },
+                    cutout: '68%',
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        })();
+    </script>
+}
