@@ -1,0 +1,69 @@
+﻿@model IEnumerable<LibrarySystem.Application.Features.RentalRequests.Dtos.RentalRequestDto>
+@using LibrarySystem.Domain.Enums
+@{
+    ViewData["Title"] = "My Rental Requests";
+}
+<div class="page-header">
+    <h1 class="page-title">My Rental Requests</h1>
+</div>
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success mb-3">@successMessage</div>
+}
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger mb-3">@errorMessage</div>
+}
+<div class="table-list">
+    <div class="table-list-header">
+        <div>Book</div>
+        <div>Request Date</div>
+        <div>Status</div>
+        <div>Expected Return Date</div>
+        <div class="table-list-cell--actions">Actions</div>
+    </div>
+    @foreach (var request in Model)
+    {
+        <div class="table-list-row">
+            <div class="table-list-cell" data-label="Book">
+                <strong>@request.BookTitle</strong>
+            </div>
+            <div class="table-list-cell" data-label="Request Date">
+                @request.RequestDate.ToString("yyyy-MM-dd")
+            </div>
+            <div class="table-list-cell" data-label="Status">
+                @if (request.Status == RentalRequestStatus.Pending)
+                {
+                    <span class="badge bg-warning">Pending</span>
+                }
+                else if (request.Status == RentalRequestStatus.Approved)
+                {
+                    <span class="badge bg-success">Approved</span>
+                }
+                else if (request.Status == RentalRequestStatus.Denied)
+                {
+                    <span class="badge bg-danger">Denied</span>
+                }
+            </div>
+            <div class="table-list-cell" data-label="Expected Return Date">
+                @if (request.ExpectedReturnDate.HasValue)
+                {
+                    @request.ExpectedReturnDate.Value.ToString("yyyy-MM-dd")
+                }
+                else
+                {
+                    <span class="text-muted">-</span>
+                }
+            </div>
+            <div class="table-list-cell table-list-cell--actions" data-label="Actions">
+                <a asp-action="Details" asp-route-id="@request.Id" class="btn btn-sm btn-secondary">Details</a>
+            </div>
+        </div>
+    }
+    @if (!Model.Any())
+    {
+        <div class="text-center p-4 text-muted">
+            No rental requests found. <a asp-area="Portal" asp-controller="Books" asp-action="Index">Browse books</a> to create a request.
+        </div>
+    }
+</div>

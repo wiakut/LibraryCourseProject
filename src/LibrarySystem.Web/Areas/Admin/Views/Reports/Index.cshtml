@@ -1,0 +1,48 @@
+﻿@{
+    ViewData["Title"] = "Reports";
+}
+<div class="mb-4">
+    <div class="report-header">
+        <div>
+            <h1 class="page-title mb-1">Reports</h1>
+            <p class="page-subtitle mb-0">
+                Visualize how your library is performing across inventory, overdue books and finances.
+            </p>
+        </div>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <a asp-action="BookInventory" class="text-decoration-none text-reset">
+                <div class="quick-link-card">
+                    <div>
+                        <span>Book inventory</span>
+                        <small>Titles, authors & availability</small>
+                    </div>
+                    <div class="quick-link-card__icon">📚</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a asp-action="OverdueBooks" class="text-decoration-none text-reset">
+                <div class="quick-link-card">
+                    <div>
+                        <span>Overdue books</span>
+                        <small>Who is late and by how much</small>
+                    </div>
+                    <div class="quick-link-card__icon">⏰</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a asp-action="Financial" class="text-decoration-none text-reset">
+                <div class="quick-link-card">
+                    <div>
+                        <span>Financial</span>
+                        <small>Rental income, fines & pledges</small>
+                    </div>
+                    <div class="quick-link-card__icon">💰</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>

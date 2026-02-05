@@ -1,0 +1,24 @@
+﻿@model LibrarySystem.Application.Features.Readers.Dtos.ReaderDto
+@{
+    ViewData["Title"] = "My Profile";
+}
+<div class="page-header">
+    <h1 class="page-title">My Profile</h1>
+</div>
+@if (TempData["SuccessMessage"] is string msg)
+{
+    <div class="alert alert-success mb-3">@msg</div>
+}
+<div class="form-card">
+    <dl class="row">
+    <dt class="col-sm-3">Name</dt>
+    <dd class="col-sm-9">@Model.Name</dd>
+    <dt class="col-sm-3">Address</dt>
+    <dd class="col-sm-9">@Model.Address</dd>
+        <dt class="col-sm-3">Phone</dt>
+        <dd class="col-sm-9">@Model.Phone</dd>
+    </dl>
+    <div class="d-flex gap-2 mt-4">
+        <a asp-action="Edit" class="btn btn-primary">Edit Profile</a>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+﻿@model LibrarySystem.Application.Features.RentalRequests.Commands.DenyRentalRequest.DenyRentalRequestCommand
+@{
+    ViewData["Title"] = "Deny Rental Request";
+}
+<div class="page-header">
+    <h1 class="page-title">Deny Rental Request</h1>
+</div>
+<div class="form-card">
+    <form asp-action="Deny" method="post">
+        <input type="hidden" asp-for="RentalRequestId" />
+        <input type="hidden" asp-for="ProcessedByUserId" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="mb-3">
+            <label asp-for="DenialReason" class="form-label">Denial Reason</label>
+            <textarea asp-for="DenialReason" class="form-control" rows="4" placeholder="Enter the reason for denying this request..."></textarea>
+            <span asp-validation-for="DenialReason" class="text-danger"></span>
+            <small class="form-text text-muted">This reason will be visible to the reader.</small>
+        </div>
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-danger">Deny Request</button>
+            <a asp-action="Index" class="btn btn-outline-primary">Cancel</a>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

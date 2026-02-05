@@ -1,0 +1,261 @@
+﻿@{
+    ViewData["Title"] = "Portal Home";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var reader = ViewBag.Reader as LibrarySystem.Application.Features.Readers.Dtos.ReaderDto;
+    var activeRentalsCount = (int)(ViewBag.ActiveRentalsCount ?? 0);
+    var pendingRequestsCount = (int)(ViewBag.PendingRequestsCount ?? 0);
+    var totalRentalsCount = (int)(ViewBag.TotalRentalsCount ?? 0);
+    var overdueRentalsCount = (int)(ViewBag.OverdueRentalsCount ?? 0);
+    var recentRentals = ViewBag.RecentRentals as IEnumerable<LibrarySystem.Application.Features.Rentals.Dtos.RentalTransactionDto> ?? Enumerable.Empty<LibrarySystem.Application.Features.Rentals.Dtos.RentalTransactionDto>();
+    var recentRequests = ViewBag.RecentRequests as IEnumerable<LibrarySystem.Application.Features.RentalRequests.Dtos.RentalRequestDto> ?? Enumerable.Empty<LibrarySystem.Application.Features.RentalRequests.Dtos.RentalRequestDto>();
+}
+<style>
+    .btn-warning-custom {
+        background: #f59e0b;
+        border-color: #f59e0b;
+        color: #1f2937;
+        font-weight: 500;
+        border-radius: 999px;
+        transition: all 0.2s ease;
+    }
+    .btn-warning-custom:hover {
+        background: #d97706;
+        border-color: #d97706;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+    .btn-info-custom {
+        background: #06b6d4;
+        border-color: #06b6d4;
+        color: white;
+        font-weight: 500;
+        border-radius: 999px;
+        transition: all 0.2s ease;
+    }
+    .btn-info-custom:hover {
+        background: #0891b2;
+        border-color: #0891b2;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+    }
+    .btn-outline-warning-custom {
+        border-color: #f59e0b;
+        color: #f59e0b;
+        border-width: 1.5px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    .btn-outline-warning-custom:hover {
+        background: #f59e0b;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    }
+    .btn-outline-info-custom {
+        border-color: #06b6d4;
+        color: #06b6d4;
+        border-width: 1.5px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    .btn-outline-info-custom:hover {
+        background: #06b6d4;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+    }
+</style>
+<div class="page-header mb-4">
+    <div>
+        <h1 class="page-title">Welcome to Library Portal</h1>
+        <p class="page-subtitle">Browse books and manage your rentals</p>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-lg-3">
+        <div class="card card-elevated h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="text-muted mb-1" style="font-size: 0.875rem; font-weight: 500;">Active Rentals</h6>
+                        <h2 class="mb-0" style="font-size: 2.5rem; font-weight: 700; color: var(--color-primary);">@activeRentalsCount</h2>
+                    </div>
+                </div>
+                <a asp-area="Portal" asp-controller="Rentals" asp-action="Index" asp-route-status="Active" class="btn btn-sm btn-outline-primary w-100">View All</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card card-elevated h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="text-muted mb-1" style="font-size: 0.875rem; font-weight: 500;">Pending Requests</h6>
+                        <h2 class="mb-0" style="font-size: 2.5rem; font-weight: 700; color: #f59e0b;">@pendingRequestsCount</h2>
+                    </div>
+                </div>
+                <a asp-area="Portal" asp-controller="RentalRequests" asp-action="Index" class="btn btn-sm btn-outline-warning-custom">View All</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card card-elevated h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="text-muted mb-1" style="font-size: 0.875rem; font-weight: 500;">Overdue Rentals</h6>
+                        <h2 class="mb-0 @(overdueRentalsCount > 0 ? "text-danger" : "text-muted")" style="font-size: 2.5rem; font-weight: 700;">@overdueRentalsCount</h2>
+                    </div>
+                </div>
+                @if (overdueRentalsCount > 0)
+                {
+                    <a asp-area="Portal" asp-controller="Rentals" asp-action="Index" asp-route-status="Active" class="btn btn-sm btn-outline-danger w-100">View Overdue</a>
+                }
+                else
+                {
+                    <span class="btn btn-sm btn-outline-secondary w-100 disabled" style="cursor: not-allowed; opacity: 0.6;">None</span>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 col-lg-3">
+        <div class="card card-elevated h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h6 class="text-muted mb-1" style="font-size: 0.875rem; font-weight: 500;">Total Rentals</h6>
+                        <h2 class="mb-0" style="font-size: 2.5rem; font-weight: 700; color: #06b6d4;">@totalRentalsCount</h2>
+                    </div>
+                </div>
+                <a asp-area="Portal" asp-controller="Rentals" asp-action="Index" class="btn btn-sm btn-outline-info-custom">View History</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card card-elevated h-100">
+            <div class="card-body" style="padding: 0;">
+                <div style="background: var(--color-primary); color: white; padding: 1rem 1.5rem; border-radius: var(--radius-md) var(--radius-md) 0 0;">
+                    <h5 class="mb-0" style="font-weight: 600;">Recent Rentals</h5>
+                </div>
+                <div style="padding: 1.5rem;">
+                    @if (recentRentals.Any())
+                    {
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            @{ var rentalList = recentRentals.ToList(); }
+                            @for (int i = 0; i < rentalList.Count; i++)
+                            {
+                                var rental = rentalList[i];
+                                <div style="padding: 1rem 0; @(i < rentalList.Count - 1 ? "border-bottom: 1px solid var(--color-border-subtle);" : "")">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="mb-0" style="font-weight: 600; color: var(--color-text-main);">@rental.BookTitle</h6>
+                                        <div>
+                                            @if (rental.Status == LibrarySystem.Domain.Enums.RentalStatus.Active)
+                                            {
+                                                <span class="badge" style="background: var(--color-primary); color: white; padding: 0.35rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.8rem;">Active</span>
+                                            }
+                                            else if (rental.Status == LibrarySystem.Domain.Enums.RentalStatus.Returned)
+                                            {
+                                                <span class="badge" style="background: #22c55e; color: white; padding: 0.35rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.8rem;">Returned</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge" style="background: var(--color-danger); color: white; padding: 0.35rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.8rem;">Overdue</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 0.875rem; color: var(--color-text-muted);">
+                                        <div>Issued: @rental.IssueDate.ToString("MMM dd, yyyy")</div>
+                                        <div>Due: @rental.ExpectedReturnDate.ToString("MMM dd, yyyy")</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="text-center mt-3">
+                            <a asp-area="Portal" asp-controller="Rentals" asp-action="Index" class="btn btn-sm btn-outline-primary">View All Rentals</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-3">No rentals yet.</p>
+                            <a asp-area="Portal" asp-controller="Books" asp-action="Index" class="btn btn-sm btn-primary">Browse Books</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card card-elevated h-100">
+            <div class="card-body" style="padding: 0;">
+                <div style="background: #f59e0b; color: #1f2937; padding: 1rem 1.5rem; border-radius: var(--radius-md) var(--radius-md) 0 0;">
+                    <h5 class="mb-0" style="font-weight: 600;">Recent Requests</h5>
+                </div>
+                <div style="padding: 1.5rem;">
+                    @if (recentRequests.Any())
+                    {
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            @{ var requestList = recentRequests.ToList(); }
+                            @for (int i = 0; i < requestList.Count; i++)
+                            {
+                                var request = requestList[i];
+                                <div style="padding: 1rem 0; @(i < requestList.Count - 1 ? "border-bottom: 1px solid var(--color-border-subtle);" : "")">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="mb-0" style="font-weight: 600; color: var(--color-text-main);">@request.BookTitle</h6>
+                                        <div>
+                                            @if (request.Status == LibrarySystem.Domain.Enums.RentalRequestStatus.Pending)
+                                            {
+                                                <span class="badge" style="background: #f59e0b; color: #1f2937; padding: 0.35rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.8rem;">Pending</span>
+                                            }
+                                            else if (request.Status == LibrarySystem.Domain.Enums.RentalRequestStatus.Approved)
+                                            {
+                                                <span class="badge" style="background: #22c55e; color: white; padding: 0.35rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.8rem;">Approved</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge" style="background: var(--color-danger); color: white; padding: 0.35rem 0.75rem; border-radius: 6px; font-weight: 500; font-size: 0.8rem;">Denied</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 0.875rem; color: var(--color-text-muted);">
+                                        Requested: @request.RequestDate.ToString("MMM dd, yyyy")
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <div class="text-center mt-3">
+                            <a asp-area="Portal" asp-controller="RentalRequests" asp-action="Index" class="btn btn-sm btn-outline-warning-custom">View All Requests</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <p class="text-muted mb-3">No rental requests yet.</p>
+                            <a asp-area="Portal" asp-controller="Books" asp-action="Index" class="btn btn-sm btn-primary">Browse Books</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card card-elevated">
+    <div class="card-body text-center" style="padding: 2rem;">
+        <h5 class="mb-4" style="font-weight: 600; color: var(--color-text-main);">Quick Actions</h5>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            <a asp-area="Portal" asp-controller="Books" asp-action="Index" class="btn btn-primary">Browse Books</a>
+            <a asp-area="Portal" asp-controller="RentalRequests" asp-action="Index" class="btn btn-warning-custom">My Requests</a>
+            <a asp-area="Portal" asp-controller="Rentals" asp-action="Index" class="btn btn-info-custom">My Rentals</a>
+            <a asp-area="Portal" asp-controller="Profile" asp-action="Index" class="btn btn-secondary">My Profile</a>
+        </div>
+    </div>
+</div>

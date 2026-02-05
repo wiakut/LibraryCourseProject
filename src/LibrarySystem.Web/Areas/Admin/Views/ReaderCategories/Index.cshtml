@@ -1,0 +1,45 @@
+﻿@model IEnumerable<LibrarySystem.Application.Features.ReaderCategories.Dtos.ReaderCategoryDto>
+@{
+    ViewData["Title"] = "Reader Categories";
+}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Reader Categories</h1>
+        <p class="page-subtitle">Manage reader categories and discount percentages</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">Create Category</a>
+</div>
+@if (TempData["Error"] is string errorMessage)
+{
+    <div class="alert alert-danger mb-3">@errorMessage</div>
+}
+<div class="table-list">
+    <div class="table-list-header">
+        <div>Name</div>
+        <div>Discount Percentage</div>
+        <div class="table-list-cell--actions">Actions</div>
+    </div>
+    @foreach (var category in Model)
+    {
+        <div class="table-list-row">
+            <div class="table-list-cell" data-label="Name">
+                <strong>@category.Name</strong>
+            </div>
+            <div class="table-list-cell" data-label="Discount Percentage">
+                <span class="badge bg-success">@category.DiscountPercentage.ToString("F1")%</span>
+            </div>
+            <div class="table-list-cell table-list-cell--actions" data-label="Actions">
+                <a asp-action="Edit" asp-route-id="@category.Id" class="btn btn-sm btn-primary">Edit</a>
+                <form asp-action="Delete" asp-route-id="@category.Id" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this category? This action cannot be undone if there are readers assigned to it.');">Delete</button>
+                </form>
+            </div>
+        </div>
+    }
+    @if (!Model.Any())
+    {
+        <div class="text-center p-4 text-muted">
+            No categories found. <a asp-action="Create">Create your first category</a>.
+        </div>
+    }
+</div>

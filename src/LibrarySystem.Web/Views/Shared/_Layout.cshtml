@@ -1,0 +1,124 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Library System</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/LibrarySystem.Web.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="layout-nav-wrapper">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light navbar-modern">
+            <div class="container-fluid px-3 px-md-4">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    Library System
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        @if (User.Identity?.IsAuthenticated ?? false)
+                        {
+                            if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="Admin" asp-controller="Books" asp-action="Index">Books</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="Admin" asp-controller="Readers" asp-action="Index">Readers</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="Admin" asp-controller="ReaderCategories" asp-action="Index">Categories</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="Admin" asp-controller="RentalRequests" asp-action="Index">Rental Requests</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="Admin" asp-controller="Rentals" asp-action="Index">Rentals</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="Admin" asp-controller="Reports" asp-action="Index">Reports</a>
+                                </li>
+                            }
+                            else if (User.IsInRole("Reader"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="Portal" asp-controller="Home" asp-action="Index">Home</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="Portal" asp-controller="Books" asp-action="Index">Books</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="Portal" asp-controller="RentalRequests" asp-action="Index">My Rental Requests</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="Portal" asp-controller="Rentals" asp-action="Index">My Rentals</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="Portal" asp-controller="Profile" asp-action="Index">Profile</a>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            </li>
+                        }
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (User.Identity?.IsAuthenticated ?? false)
+                        {
+                            <li class="nav-item me-2 align-self-center">
+                                <span class="navbar-user-chip">
+                                    <span class="navbar-user-chip__dot"></span>
+                                    @User.Identity!.Name
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-ghost nav-link">Logout</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="app-shell app-shell--wide @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "app-shell--dashboard" : "")">
+        <main role="main" class="app-main">
+            @RenderBody()
+        </main>
+    </div>
+    <div class="layout-footer-spacer"></div>
+    <footer class="footer-modern">
+        <div class="container d-flex justify-content-between align-items-center">
+            <span>&copy; 2025 - Library System</span>
+            <span>
+                <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            </span>
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/chart.js/chart.umd.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

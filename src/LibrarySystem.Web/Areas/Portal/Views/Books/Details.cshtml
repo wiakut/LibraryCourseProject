@@ -1,0 +1,58 @@
+﻿@model LibrarySystem.Application.Features.Books.Dtos.BookDto
+@{
+    ViewData["Title"] = "Book Details";
+    var hasPendingRequest = ViewBag.HasPendingRequest as bool? ?? false;
+}
+<div class="page-header">
+    <h1 class="page-title">@Model.Title</h1>
+</div>
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success mb-3">@successMessage</div>
+}
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger mb-3">@errorMessage</div>
+}
+<div class="form-card">
+    <p class="text-muted mb-3">@Model.Author</p>
+    <p class="mb-4">
+        <span class="badge bg-secondary">@Model.Genre</span>
+    </p>
+    <dl class="row">
+        <dt class="col-sm-3">Pledge Value</dt>
+        <dd class="col-sm-9">@Model.PledgeValue.ToString("C")</dd>
+        <dt class="col-sm-3">Base Rental Cost (per day)</dt>
+        <dd class="col-sm-9">@Model.BaseRentalCost.ToString("C")</dd>
+        <dt class="col-sm-3">Available Copies</dt>
+        <dd class="col-sm-9">
+            @if (Model.AvailableCount > 0)
+            {
+                <span class="badge bg-success">@Model.AvailableCount available</span>
+            }
+            else
+            {
+                <span class="badge bg-danger">Not available</span>
+            }
+        </dd>
+    </dl>
+    <div class="d-flex gap-2 mt-4">
+        @if (Model.AvailableCount > 0 && !hasPendingRequest)
+        {
+            <form asp-area="Portal" asp-controller="RentalRequests" asp-action="Create" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="bookId" value="@Model.Id" />
+                <button type="submit" class="btn btn-primary">Request Rental</button>
+            </form>
+        }
+        else if (hasPendingRequest)
+        {
+            <button type="button" class="btn btn-secondary" disabled>Request Already Pending</button>
+        }
+        else
+        {
+            <button type="button" class="btn btn-secondary" disabled>Not Available</button>
+        }
+        <a asp-action="Index" class="btn btn-outline-primary">Back to List</a>
+    </div>
+</div>

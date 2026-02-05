@@ -1,0 +1,195 @@
+﻿@model IEnumerable<LibrarySystem.Application.Features.Rentals.Dtos.RentalTransactionDto>
+@{
+    ViewData["Title"] = "Rentals";
+}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Rentals</h1>
+        <p class="page-subtitle">Manage book rentals and returns</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">Create Rental</a>
+</div>
+<div class="card-elevated p-3 mb-3">
+    <form id="searchForm" class="mb-0">
+        <div class="row g-2">
+            <div class="col-md-5">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by book title, author, reader name, or phone..." />
+            </div>
+            <div class="col-md-3">
+                <select id="statusFilter" class="form-select">
+                    <option value="">All Statuses</option>
+                    @if (ViewBag.StatusFilter as string == "Active")
+                    {
+                        <option value="Active" selected="selected">Active</option>
+                    }
+                    else
+                    {
+                        <option value="Active">Active</option>
+                    }
+                    @if (ViewBag.StatusFilter as string == "Returned")
+                    {
+                        <option value="Returned" selected="selected">Returned</option>
+                    }
+                    else
+                    {
+                        <option value="Returned">Returned</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="button" id="clearSearch" class="btn btn-outline-secondary w-100" style="display: none;">Clear</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="table-list" id="rentalsTable">
+    <div class="table-list-header">
+        <div>Book</div>
+        <div>Issue Date</div>
+        <div>Expected Return</div>
+        <div>Status</div>
+        <div class="table-list-cell--actions">Actions</div>
+    </div>
+    <div id="rentalsContainer">
+        @foreach (var rental in Model)
+        {
+            <div class="table-list-row">
+                <div class="table-list-cell" data-label="Book">@(rental.BookTitle ?? "N/A")</div>
+                <div class="table-list-cell" data-label="Issue Date">@rental.IssueDate.ToShortDateString()</div>
+                <div class="table-list-cell" data-label="Expected Return">@rental.ExpectedReturnDate.ToShortDateString()</div>
+                <div class="table-list-cell" data-label="Status">
+                    <span class="badge @(rental.Status == LibrarySystem.Domain.Enums.RentalStatus.Active ? "bg-success" : "bg-secondary")">@rental.Status</span>
+                </div>
+                <div class="table-list-cell table-list-cell--actions" data-label="Actions">
+                    <a asp-action="Details" asp-route-id="@rental.Id" class="btn btn-sm btn-secondary">Details</a>
+                    @if (rental.Status == LibrarySystem.Domain.Enums.RentalStatus.Active)
+                    {
+                        <a asp-action="Return" asp-route-id="@rental.Id" class="btn btn-sm btn-primary">Return</a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    <div id="loadingIndicator" class="text-center p-4" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Html.AntiForgeryToken()
+    <script>
+        (function() {
+            let currentPage = 1;
+            let isLoading = false;
+            let hasMorePages = true;
+            let currentSearch = '';
+            let currentStatus = '@(ViewBag.StatusFilter as string ?? "")';
+            const pageSize = 20;
+            const container = document.getElementById('rentalsContainer');
+            const searchInput = document.getElementById('searchInput');
+            const statusFilter = document.getElementById('statusFilter');
+            const clearBtn = document.getElementById('clearSearch');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            let searchTimeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentSearch = this.value.trim();
+                    currentPage = 1;
+                    hasMorePages = true;
+                    container.innerHTML = '';
+                    clearBtn.style.display = (currentSearch || currentStatus) ? 'block' : 'none';
+                    loadRentals();
+                }, 500);
+            });
+            statusFilter.addEventListener('change', function() {
+                currentStatus = this.value;
+                currentPage = 1;
+                hasMorePages = true;
+                container.innerHTML = '';
+                clearBtn.style.display = (currentSearch || currentStatus) ? 'block' : 'none';
+                loadRentals();
+            });
+            clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                statusFilter.value = '';
+                currentSearch = '';
+                currentStatus = '';
+                currentPage = 1;
+                hasMorePages = true;
+                container.innerHTML = '';
+                this.style.display = 'none';
+                loadRentals();
+            });
+            function loadRentals() {
+                if (isLoading || !hasMorePages) return;
+                isLoading = true;
+                loadingIndicator.style.display = 'block';
+                const baseUrl = '@Url.Action("GetRentals", "Rentals", new { area = "Admin" })';
+                const url = baseUrl + `?search=${encodeURIComponent(currentSearch)}&status=${encodeURIComponent(currentStatus)}&pageNumber=${currentPage}&pageSize=${pageSize}`;
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.items && data.items.length > 0) {
+                            data.items.forEach(rental => {
+                                const row = document.createElement('div');
+                                row.className = 'table-list-row';
+                                const detailsUrl = '@Url.Action("Details", "Rentals", new { area = "Admin" })/' + rental.id;
+                                const returnUrl = '@Url.Action("Return", "Rentals", new { area = "Admin" })/' + rental.id;
+                                const statusClass = rental.status === 1 ? 'bg-success' : 'bg-secondary';
+                                const statusText = rental.status === 1 ? 'Active' : (rental.status === 2 ? 'Returned' : 'Overdue');
+                                const returnBtn = rental.status === 1 ? `<a href="${returnUrl}" class="btn btn-sm btn-primary">Return</a>` : '';
+                                row.innerHTML = `
+                                    <div class="table-list-cell" data-label="Book">${escapeHtml(rental.bookTitle || 'N/A')}</div>
+                                    <div class="table-list-cell" data-label="Issue Date">${formatDate(rental.issueDate)}</div>
+                                    <div class="table-list-cell" data-label="Expected Return">${formatDate(rental.expectedReturnDate)}</div>
+                                    <div class="table-list-cell" data-label="Status">
+                                        <span class="badge ${statusClass}">${statusText}</span>
+                                    </div>
+                                    <div class="table-list-cell table-list-cell--actions" data-label="Actions">
+                                        <a href="${detailsUrl}" class="btn btn-sm btn-secondary">Details</a>
+                                        ${returnBtn}
+                                    </div>
+                                `;
+                                container.appendChild(row);
+                            });
+                            hasMorePages = data.hasNextPage;
+                            currentPage++;
+                        } else {
+                            hasMorePages = false;
+                        }
+                        isLoading = false;
+                        loadingIndicator.style.display = 'none';
+                    })
+                    .catch(error => {
+                        console.error('Error loading rentals:', error);
+                        isLoading = false;
+                        loadingIndicator.style.display = 'none';
+                    });
+            }
+            window.addEventListener('scroll', function() {
+                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
+                    loadRentals();
+                }
+            });
+            if (container.children.length < pageSize) {
+                hasMorePages = false;
+            } else {
+                loadRentals();
+            }
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+            }
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString();
+            }
+        })();
+    </script>
+}

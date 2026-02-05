@@ -1,0 +1,92 @@
+﻿@model IEnumerable<LibrarySystem.Application.Features.RentalRequests.Dtos.RentalRequestDto>
+@using LibrarySystem.Domain.Enums
+@{
+    ViewData["Title"] = "Rental Requests";
+}
+<div class="page-header">
+    <h1 class="page-title">Rental Requests</h1>
+</div>
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+    <div class="alert alert-success mb-3">@successMessage</div>
+}
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger mb-3">@errorMessage</div>
+}
+<div class="card-elevated p-3 mb-3">
+    <form method="get" class="mb-0">
+        <div class="row g-2">
+            <div class="col-md-4">
+                <select name="status" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Statuses</option>
+                    <option value="1" selected="@(ViewBag.Status == RentalRequestStatus.Pending)">Pending</option>
+                    <option value="2" selected="@(ViewBag.Status == RentalRequestStatus.Approved)">Approved</option>
+                    <option value="3" selected="@(ViewBag.Status == RentalRequestStatus.Denied)">Denied</option>
+                </select>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="table-list">
+    <div class="table-list-header">
+        <div>Book</div>
+        <div>Reader</div>
+        <div>Request Date</div>
+        <div>Status</div>
+        <div>Expected Return Date</div>
+        <div class="table-list-cell--actions">Actions</div>
+    </div>
+    @foreach (var request in Model)
+    {
+        <div class="table-list-row">
+            <div class="table-list-cell" data-label="Book">
+                <a asp-area="Admin" asp-controller="Books" asp-action="Details" asp-route-id="@request.BookId">@request.BookTitle</a>
+            </div>
+            <div class="table-list-cell" data-label="Reader">
+                <a asp-area="Admin" asp-controller="Readers" asp-action="Details" asp-route-id="@request.ReaderId">@request.ReaderName</a>
+            </div>
+            <div class="table-list-cell" data-label="Request Date">
+                @request.RequestDate.ToString("yyyy-MM-dd")
+            </div>
+            <div class="table-list-cell" data-label="Status">
+                @if (request.Status == RentalRequestStatus.Pending)
+                {
+                    <span class="badge bg-warning">Pending</span>
+                }
+                else if (request.Status == RentalRequestStatus.Approved)
+                {
+                    <span class="badge bg-success">Approved</span>
+                }
+                else if (request.Status == RentalRequestStatus.Denied)
+                {
+                    <span class="badge bg-danger">Denied</span>
+                }
+            </div>
+            <div class="table-list-cell" data-label="Expected Return Date">
+                @if (request.ExpectedReturnDate.HasValue)
+                {
+                    @request.ExpectedReturnDate.Value.ToString("yyyy-MM-dd")
+                }
+                else
+                {
+                    <span class="text-muted">-</span>
+                }
+            </div>
+            <div class="table-list-cell table-list-cell--actions" data-label="Actions">
+                <a asp-action="Details" asp-route-id="@request.Id" class="btn btn-sm btn-secondary">Details</a>
+                @if (request.Status == RentalRequestStatus.Pending)
+                {
+                    <a asp-action="Approve" asp-route-id="@request.Id" class="btn btn-sm btn-success" style="background-color: #198754; border-color: #198754; color: white;">Approve</a>
+                    <a asp-action="Deny" asp-route-id="@request.Id" class="btn btn-sm btn-danger">Deny</a>
+                }
+            </div>
+        </div>
+    }
+    @if (!Model.Any())
+    {
+        <div class="text-center p-4 text-muted">
+            No rental requests found.
+        </div>
+    }
+</div>

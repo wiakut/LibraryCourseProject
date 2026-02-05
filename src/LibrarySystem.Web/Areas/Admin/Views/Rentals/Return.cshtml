@@ -1,0 +1,30 @@
+﻿@model LibrarySystem.Application.Features.Rentals.Commands.ReturnBook.ReturnBookCommand
+@{
+    ViewData["Title"] = "Return Book";
+}
+<div class="page-header">
+    <h1 class="page-title">Return Book</h1>
+</div>
+<div class="form-card">
+    <form asp-action="Return" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="RentalTransactionId" />
+    <div class="mb-3">
+        <label asp-for="ActualReturnDate" class="form-label"></label>
+        <input asp-for="ActualReturnDate" class="form-control" type="date" />
+        <span asp-validation-for="ActualReturnDate" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="DamageCost" class="form-label"></label>
+        <input asp-for="DamageCost" class="form-control" />
+        <span asp-validation-for="DamageCost" class="text-danger"></span>
+    </div>
+        <div class="d-flex gap-2 mt-4">
+            <button type="submit" class="btn btn-primary">Process Return</button>
+            <a asp-action="Index" class="btn btn-outline-primary">Cancel</a>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

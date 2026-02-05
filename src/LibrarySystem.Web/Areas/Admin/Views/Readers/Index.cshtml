@@ -1,0 +1,151 @@
+﻿@model IEnumerable<LibrarySystem.Application.Features.Readers.Dtos.ReaderDto>
+@{
+    ViewData["Title"] = "Readers";
+}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Readers</h1>
+        <p class="page-subtitle">Manage library members</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">Create Reader</a>
+</div>
+<div class="card-elevated p-3 mb-3">
+    <form id="searchForm" class="mb-0">
+        <div class="row g-2">
+            <div class="col-md-10">
+                <input type="text" id="searchInput" class="form-control" placeholder="Search by name, address, or phone..." />
+            </div>
+            <div class="col-md-2">
+                <button type="button" id="clearSearch" class="btn btn-outline-secondary w-100" style="display: none;">Clear</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="table-list" id="readersTable">
+    <div class="table-list-header">
+        <div>Name</div>
+        <div>Address</div>
+        <div>Phone</div>
+        <div class="table-list-cell--actions">Actions</div>
+    </div>
+    <div id="readersContainer">
+        @foreach (var reader in Model)
+        {
+            <div class="table-list-row">
+                <div class="table-list-cell" data-label="Name">@reader.Name</div>
+                <div class="table-list-cell" data-label="Address">@reader.Address</div>
+                <div class="table-list-cell" data-label="Phone">@reader.Phone</div>
+                <div class="table-list-cell table-list-cell--actions" data-label="Actions">
+                    <a asp-action="Details" asp-route-id="@reader.Id" class="btn btn-sm btn-secondary">Details</a>
+                    <a asp-action="Edit" asp-route-id="@reader.Id" class="btn btn-sm btn-primary">Edit</a>
+                    <form asp-action="Delete" asp-route-id="@reader.Id" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');">Delete</button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+    <div id="loadingIndicator" class="text-center p-4" style="display: none;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @Html.AntiForgeryToken()
+    <script>
+        (function() {
+            let currentPage = 1;
+            let isLoading = false;
+            let hasMorePages = true;
+            let currentSearch = '';
+            const pageSize = 20;
+            const container = document.getElementById('readersContainer');
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearch');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+            let searchTimeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentSearch = this.value.trim();
+                    currentPage = 1;
+                    hasMorePages = true;
+                    container.innerHTML = '';
+                    clearBtn.style.display = currentSearch ? 'block' : 'none';
+                    loadReaders();
+                }, 500);
+            });
+            clearBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                currentSearch = '';
+                currentPage = 1;
+                hasMorePages = true;
+                container.innerHTML = '';
+                this.style.display = 'none';
+                loadReaders();
+            });
+            function loadReaders() {
+                if (isLoading || !hasMorePages) return;
+                isLoading = true;
+                loadingIndicator.style.display = 'block';
+                const baseUrl = '@Url.Action("GetReaders", "Readers", new { area = "Admin" })';
+                const url = baseUrl + `?search=${encodeURIComponent(currentSearch)}&pageNumber=${currentPage}&pageSize=${pageSize}`;
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.items && data.items.length > 0) {
+                            data.items.forEach(reader => {
+                                const row = document.createElement('div');
+                                row.className = 'table-list-row';
+                                const detailsUrl = '@Url.Action("Details", "Readers", new { area = "Admin" })/' + reader.id;
+                                const editUrl = '@Url.Action("Edit", "Readers", new { area = "Admin" })/' + reader.id;
+                                const deleteUrl = '@Url.Action("Delete", "Readers", new { area = "Admin" })/' + reader.id;
+                                row.innerHTML = `
+                                    <div class="table-list-cell" data-label="Name">${escapeHtml(reader.name)}</div>
+                                    <div class="table-list-cell" data-label="Address">${escapeHtml(reader.address)}</div>
+                                    <div class="table-list-cell" data-label="Phone">${escapeHtml(reader.phone)}</div>
+                                    <div class="table-list-cell table-list-cell--actions" data-label="Actions">
+                                        <a href="${detailsUrl}" class="btn btn-sm btn-secondary">Details</a>
+                                        <a href="${editUrl}" class="btn btn-sm btn-primary">Edit</a>
+                                        <form action="${deleteUrl}" method="post" class="d-inline">
+                                            <input type="hidden" name="__RequestVerificationToken" value="${token}" />
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');">Delete</button>
+                                        </form>
+                                    </div>
+                                `;
+                                container.appendChild(row);
+                            });
+                            hasMorePages = data.hasNextPage;
+                            currentPage++;
+                        } else {
+                            hasMorePages = false;
+                        }
+                        isLoading = false;
+                        loadingIndicator.style.display = 'none';
+                    })
+                    .catch(error => {
+                        console.error('Error loading readers:', error);
+                        isLoading = false;
+                        loadingIndicator.style.display = 'none';
+                    });
+            }
+            window.addEventListener('scroll', function() {
+                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
+                    loadReaders();
+                }
+            });
+            if (container.children.length < pageSize) {
+                hasMorePages = false;
+            } else {
+                loadReaders();
+            }
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        })();
+    </script>
+}

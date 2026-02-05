@@ -1,0 +1,131 @@
+﻿@model IEnumerable<LibrarySystem.Application.Features.Books.Dtos.BookDto>
+@{
+    ViewData["Title"] = "Browse Books";
+    var genres = ViewBag.Genres as IEnumerable<string> ?? Enumerable.Empty<string>();
+}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Browse Books</h1>
+    </div>
+</div>
+<div class="card-elevated p-3 mb-4">
+    <form method="get" class="mb-0">
+    <div class="row g-2">
+        <div class="col-md-4">
+            <input type="text" name="search" value="@ViewBag.Search" class="form-control" placeholder="Search by title or author..." />
+        </div>
+        <div class="col-md-3">
+            <select name="genre" class="form-select">
+                <option value="">All Genres</option>
+@foreach (var g in genres)
+{
+                @if (ViewBag.Genre as string == g)
+                {
+                    <option value="@g" selected="selected">@g</option>
+                }
+                else
+                {
+                    <option value="@g">@g</option>
+                }
+}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-outline-primary w-100">Search</button>
+        </div>
+    </div>
+    </form>
+</div>
+<div id="booksContainer" class="row row-cols-1 row-cols-md-3 g-4">
+@foreach (var book in Model)
+{
+    <div class="col">
+        <div class="card card-elevated h-100">
+            <div class="card-body">
+                <h5 class="card-title">@book.Title</h5>
+                <h6 class="card-subtitle mb-2 text-muted">@book.Author</h6>
+                <p class="card-text">
+                    <span class="badge bg-secondary">@book.Genre</span>
+                </p>
+                <a asp-action="Details" asp-route-id="@book.Id" class="btn btn-sm btn-outline-primary">View Details</a>
+            </div>
+        </div>
+    </div>
+}
+</div>
+<div id="loadingIndicator" class="text-center p-4" style="display: none;">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        (function() {
+            let currentPage = 1;
+            let isLoading = false;
+            let hasMorePages = true;
+            let currentSearch = '@(ViewBag.Search as string ?? "")';
+            let currentGenre = '@(ViewBag.Genre as string ?? "")';
+            const pageSize = 12;
+            const container = document.getElementById('booksContainer');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            function loadBooks() {
+                if (isLoading || !hasMorePages) return;
+                isLoading = true;
+                loadingIndicator.style.display = 'block';
+                const baseUrl = '@Url.Action("GetBooks", "Books", new { area = "Portal" })';
+                const url = baseUrl + `?search=${encodeURIComponent(currentSearch)}&genre=${encodeURIComponent(currentGenre)}&pageNumber=${currentPage}&pageSize=${pageSize}`;
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.items && data.items.length > 0) {
+                            data.items.forEach(book => {
+                                const col = document.createElement('div');
+                                col.className = 'col';
+                                const detailsUrl = '@Url.Action("Details", "Books", new { area = "Portal" })/' + book.id;
+                                col.innerHTML = `
+                                    <div class="card card-elevated h-100">
+                                        <div class="card-body">
+                                            <h5 class="card-title">${escapeHtml(book.title)}</h5>
+                                            <h6 class="card-subtitle mb-2 text-muted">${escapeHtml(book.author)}</h6>
+                                            <p class="card-text">
+                                                <span class="badge bg-secondary">${escapeHtml(book.genre)}</span>
+                                            </p>
+                                            <a href="${detailsUrl}" class="btn btn-sm btn-outline-primary">View Details</a>
+                                        </div>
+                                    </div>
+                                `;
+                                container.appendChild(col);
+                            });
+                            hasMorePages = data.hasNextPage;
+                            currentPage++;
+                        } else {
+                            hasMorePages = false;
+                        }
+                        isLoading = false;
+                        loadingIndicator.style.display = 'none';
+                    })
+                    .catch(error => {
+                        console.error('Error loading books:', error);
+                        isLoading = false;
+                        loadingIndicator.style.display = 'none';
+                    });
+            }
+            window.addEventListener('scroll', function() {
+                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
+                    loadBooks();
+                }
+            });
+            if (container.children.length < pageSize) {
+                hasMorePages = false;
+            } else {
+                loadBooks();
+            }
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        })();
+    </script>
+}

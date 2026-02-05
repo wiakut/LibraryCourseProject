@@ -1,0 +1,58 @@
+﻿@model LibrarySystem.Application.Features.Rentals.Dtos.RentalTransactionDto
+@{
+    ViewData["Title"] = "Rental Details";
+}
+<div class="page-header">
+    <h1 class="page-title">Rental Details</h1>
+</div>
+@if (TempData["ReturnSummary"] is string summary)
+{
+    <div class="alert alert-info mb-3">@summary</div>
+}
+<div class="form-card">
+    <dl class="row">
+    <dt class="col-sm-3">Book</dt>
+    <dd class="col-sm-9">
+        @if (!string.IsNullOrEmpty(Model.BookTitle))
+        {
+            <a asp-area="Admin" asp-controller="Books" asp-action="Edit" asp-route-id="@Model.BookId">@Model.BookTitle</a>
+        }
+        else
+        {
+            <span>N/A</span>
+        }
+    </dd>
+    <dt class="col-sm-3">Reader</dt>
+    <dd class="col-sm-9">
+        @if (!string.IsNullOrEmpty(Model.ReaderName))
+        {
+            <a asp-area="Admin" asp-controller="Readers" asp-action="Details" asp-route-id="@Model.ReaderId">@Model.ReaderName</a>
+        }
+        else
+        {
+            <span>N/A</span>
+        }
+    </dd>
+    <dt class="col-sm-3">Issue Date</dt>
+    <dd class="col-sm-9">@Model.IssueDate</dd>
+    <dt class="col-sm-3">Expected Return</dt>
+    <dd class="col-sm-9">@Model.ExpectedReturnDate</dd>
+    <dt class="col-sm-3">Actual Return</dt>
+    <dd class="col-sm-9">@Model.ActualReturnDate</dd>
+    <dt class="col-sm-3">Status</dt>
+    <dd class="col-sm-9">@Model.Status</dd>
+    <dt class="col-sm-3">Base Cost</dt>
+    <dd class="col-sm-9">@Model.BaseRentalCost.ToString("C")</dd>
+    <dt class="col-sm-3">Final Cost</dt>
+    <dd class="col-sm-9">@Model.FinalRentalCost.ToString("C")</dd>
+    <dt class="col-sm-3">Pledge</dt>
+    <dd class="col-sm-9">@Model.PledgeAmount.ToString("C")</dd>
+    <dt class="col-sm-3">Fine</dt>
+    <dd class="col-sm-9">@Model.FineAmount.ToString("C")</dd>
+        <dt class="col-sm-3">Refund</dt>
+        <dd class="col-sm-9">@Model.RefundAmount.ToString("C")</dd>
+    </dl>
+    <div class="d-flex gap-2 mt-4">
+        <a asp-action="Index" class="btn btn-outline-primary">Back to List</a>
+    </div>
+</div>
